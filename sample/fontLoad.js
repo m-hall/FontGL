@@ -2,19 +2,8 @@
 /*global Font */
 (function () {
     "use strict";
-    var woff2 = 'http://fonts.gstatic.com/s/opensans/v10/DXI1ORHCpsQm3Vp6mXoaTaOCaDZZVv73zpFSwE4Va2k.woff2',
-        woff =  'http://fonts.gstatic.com/s/opensans/v10/DXI1ORHCpsQm3Vp6mXoaTaRDOzjiPcYnFooOUGCOsRk.woff',
-        woffF = new Font('woff'),
-        woff2F = new Font('woff2'),
-        arialF = new Font('arial'),
-        noUrlF = new Font('nourl'),
-        timeoutF = new Font('timeout'),
-        woffEl = document.getElementById('woff'),
-        woff2El = document.getElementById('woff2'),
-        arialEl = document.getElementById('arial'),
-        noUrlEl = document.getElementById('nourl'),
-        timeoutEl = document.getElementById('timeout');
-
+    var woff = 'http://fonts.gstatic.com/s/opensans/v10/DXI1ORHCpsQm3Vp6mXoaTaRDOzjiPcYnFooOUGCOsRk.woff',
+        woff2 = 'http://fonts.gstatic.com/s/opensans/v10/DXI1ORHCpsQm3Vp6mXoaTaOCaDZZVv73zpFSwE4Va2k.woff2';
 
     function success() {
         this.style.background = "#bfb";
@@ -23,22 +12,25 @@
         this.innerHTML += " - " + reason;
         this.style.background = "#fbb";
     }
-    woffF.load(woff, 'woff')
-        .then(success.bind(woffEl), fail.bind(woffEl))
-        .then(function () {
-            return woff2F.load(woff2, 'woff2');
-        })
-        .then(success.bind(woff2El), fail.bind(woff2El))
-        .then(function () {
-            return arialF.load();
-        })
-        .then(success.bind(arialEl), fail.bind(arialEl))
-        .then(function () {
-            return noUrlF.load();
-        })
-        .then(success.bind(noUrlEl), fail.bind(noUrlEl))
-        .then(function () {
-            return timeoutF.load('fail');
-        })
-        .then(success.bind(timeoutEl), fail.bind(timeoutEl));
+    function addLoadTest(name, url, format) {
+        var el = document.createElement('div'),
+            font = new Font(name);
+
+        el.style.fontSize = '30px';
+        el.style.fontFamily = '"' + name + '", monospace';
+        el.innerHTML = name;
+        document.body.appendChild(el);
+
+        font.load(url, format)
+            .then(success.bind(el), fail.bind(el));
+    }
+    function load() {
+        addLoadTest('woff', woff, 'woff');
+        addLoadTest('woff2', woff2, 'woff2');
+        addLoadTest('arial');
+        addLoadTest('nourl');
+        addLoadTest('timeout', 'doesn\'t exits');
+    }
+
+    window.addEventListener('load', load, false);
 }());
