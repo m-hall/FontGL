@@ -14,34 +14,6 @@
 <div style="font-family: 'fail', monospace; font-size: 32px; font-weight: 300;" id='fail'>ASDF</div>
 
 <script src="../src/Font.js"></script>
-<script>
-/*jslint browser: true, devel: true */
-/*global Font */
-(function () {
-    "use strict";
-    var font = 'http://fonts.gstatic.com/s/opensans/v10/DXI1ORHCpsQm3Vp6mXoaTaOCaDZZVv73zpFSwE4Va2k.woff2',
-        format = 'woff2',
-        f = new Font('test'),
-        f2 = new Font('meep'),
-        testEl = document.getElementById('test'),
-        failEl = document.getElementById('fail');
-
-
-    function success() {
-        this.style.background = "#bfb";
-        console.log('success');
-    }
-    function fail(reason) {
-        this.style.background = "#fbb";
-        console.log('fail', reason);
-    }
-    f.load(font, format)
-        .then(success.bind(testEl), fail.bind(testEl))
-        .then(function () {
-            return f2.load('fail');
-        })
-        .then(success.bind(failEl), fail.bind(failEl));
-}());
-</script>
+<script src="fontLoad.js"></script>
 </body>
 </html>
