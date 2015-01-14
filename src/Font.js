@@ -10,7 +10,13 @@
         testString = 'Quid pro quo',
         interval = 100,
         maxAttempts = 20,
-        test;
+        test,
+        styleSheet = (function () {
+            var style = document.createElement('style');
+            style.appendChild(document.createTextNode(''));
+            document.head.appendChild(style);
+            return style.sheet;
+        }());
 
 
     function isFontLoaded(family) {
@@ -57,13 +63,12 @@
             self = this,
             family = this.name,
             match,
-            style,
-            cssText;
+            fontRule;
+        if (isFontLoaded(family)) {
+            return Promise.resolve('Yay!');
+        }
         if (!src) {
             return Promise.reject('No source URL');
-        }
-        if (isFontLoaded(family)) {
-            return Promise.resolve();
         }
         if (!type) {
             match = url.match(formatRegexp);
@@ -72,11 +77,9 @@
             }
         }
         this.format = type;
-        style = document.createElement('style');
-        cssText = cssTemplate.replace('{family}', family);
-        cssText = cssText.replace('{url}', 'url(' + src + ') format("' + type + '")');
-        style.innerText = cssText;
-        document.head.appendChild(style);
+        fontRule = cssTemplate.replace('{family}', family);
+        fontRule = fontRule.replace('{url}', 'url(' + src + ') format("' + type + '")');
+        styleSheet.insertRule(fontRule, 0);
         return new Promise(function (resolve, reject) {
             if (isFontLoaded(family)) {
                 resolve();
