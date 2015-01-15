@@ -14,7 +14,7 @@
         f.addCharacters('~!@#$%^&*()_+{}|:"<>?`,./;\'[]\\-="Éá, é, í, ó, ú, ü, ñ ...…');
         f = new Font('arial');
         document.body.appendChild(f.canvas);
-        new FontFace('open sans', 'url(http://fonts.gstatic.com/s/opensans/v10/DXI1ORHCpsQm3Vp6mXoaTaRDOzjiPcYnFooOUGCOsRk.woff) format(woff)', {})
+        new FontFace('open sans', 'url("http://fonts.gstatic.com/s/opensans/v10/DXI1ORHCpsQm3Vp6mXoaTaRDOzjiPcYnFooOUGCOsRk.woff") format("woff")', {})
             .load()
             .then(function () {
                 f = new Font('open sans');
