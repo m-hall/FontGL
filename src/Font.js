@@ -117,7 +117,6 @@
             ctx;
         canvas.width = this.sheetWidth * this.scale;
         canvas.height = this.sheetHeight * this.scale;
-        canvas.style.background = "rgb(153, 135, 255)";
         ctx = canvas.getContext('2d');
         ctx.font = this.fontSize * this.scale + "px " + this.family;
         ctx.fillStyle = "rgb(0, 0, 0)";
