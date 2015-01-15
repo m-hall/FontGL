@@ -7,7 +7,6 @@
     }*/
     var proto,
         cssTemplate = '@font-face { font-family: "{family}"; src: {url}; }',
-        testFont = 'monospace',
         testSize = '250px',
         testString = 'Quid pro quo',
         interval = 100,
@@ -22,16 +21,12 @@
 
     /**
      * Checks if a font is loaded
-     * Note: can have false negative if font is same size as monospace font.
      * @param  {string}  family  The name of a font family.
      * @return {Boolean}         True if the font is loaded, false otherwise.
      */
     function isFontLoaded(family) {
         var testWidth,
             actualWidth;
-        if (family === testFont) {
-            return true;
-        }
         if (!test) {
             test = document.createElement('span');
             test.innerHTML = testString;
@@ -40,15 +35,23 @@
             test.style.left = '-99999px';
             test.style.visibility = 'hidden';
             test.style.fontSize = testSize;
-            test.style.fontFamily = testFont;
             document.body.appendChild(test);
-        } else {
-            test.style.fontFamily = testFont;
         }
+        test.style.fontFamily = 'monospace';
         testWidth = test.offsetWidth;
-        test.style.fontFamily = family + ',' + testFont;
+        test.style.fontFamily = family + ', monospace';
         actualWidth = test.offsetWidth;
-        return testWidth !== actualWidth;
+        if (testWidth !== actualWidth) {
+            return true;
+        }
+        test.style.fontFamily = 'serif';
+        testWidth = test.offsetWidth;
+        test.style.fontFamily = family + ', serif';
+        actualWidth = test.offsetWidth;
+        if (testWidth !== actualWidth) {
+            return true;
+        }
+        return false;
     }
 
     /**
