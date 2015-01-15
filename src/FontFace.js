@@ -20,7 +20,12 @@
             return style.sheet;
         }());
 
-
+    /**
+     * Checks if a font is loaded
+     * Note: can have false negative if font is same size as monospace font.
+     * @param  {string}  family  The name of a font family.
+     * @return {Boolean}         True if the font is loaded, false otherwise.
+     */
     function isFontLoaded(family) {
         var testWidth,
             actualWidth;
@@ -46,7 +51,11 @@
         return testWidth !== actualWidth;
     }
 
-    function watchFont(self) {
+    /**
+     * Watches a font to see if it loads
+     * @param  {FontFace} font  A FontFace object that is loading
+     */
+    function watchFont(font) {
         var timer,
             times = 0;
         timer = setInterval(function () {
@@ -60,9 +69,16 @@
                 this.status = "error";
                 this._reject("Timed out.");
             }
-        }.bind(self), interval);
+        }.bind(font), interval);
     }
 
+    /**
+     * Creates a new FontFace object
+     * @constructor
+     * @param {string} family    The name of a font family.
+     * @param {string} src       The css src attribute of a font family.
+     * @param {Object} [options] Extra options to define the font.
+     */
     function FontFace(family, src, options) {
         var self = this;
         this.family = family;
@@ -81,6 +97,12 @@
     proto.unicodeRange = "U+0-10FFFF";
     proto.variant = "normal";
     proto.weight = "normal";
+
+    /**
+     * Gets the promise that fulfills when the FontFace finishes loading
+     * @this {FontFace}
+     * @property {Promise} loaded  A promise object for loading the font
+     */
     Object.defineProperty(
         proto,
         'loaded',
@@ -91,6 +113,11 @@
         }
     );
 
+    /**
+     * Starts loading the FontFace
+     * @this {FontFace}
+     * @return {Promise}  A promise that will be fulfilled when the font finishes loading.
+     */
     proto.load = function () {
         if (this.status !== "unloaded") {
             return this._promise();
