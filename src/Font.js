@@ -21,8 +21,8 @@
             if (!isNaN(options.scale) && options.scale > 0) {
                 this.scale = options.scale;
             }
-            if (!isNaN(options.fontSize) && options.fontSize > 0) {
-                this.fontSize = options.fontSize;
+            if (!isNaN(options.size) && options.size > 0) {
+                this.size = options.size;
             }
             if (!isNaN(options.lineSize) && options.lineSize > 0) {
                 this.lineSize = options.lineSize;
@@ -37,14 +37,19 @@
         if (this.gl) {
             this.updateTexture();
         }
+
+        this.characterMap[' '] = {
+            width: this.spaceWidth,
+            height: this.size * this.lineSize,
+            textureCoords: null
+        };
     }
     Font.defaultCharacters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.,\'-\/';
-    Font.flipTextures = false;
     proto = Font.prototype;
 
-    proto.fontSize = 30;
+    proto.size = 30;
     proto.scale = 1;
-    proto.lineSize = 1.1; // size relative to EMs
+    proto.lineSize = 1.3; // size relative to EMs
 
     proto.sheetWidth = 256;
     proto.sheetHeight = 256;
@@ -64,20 +69,18 @@
         }
         if (texture) {
             gl.bindTexture(gl.TEXTURE_2D, texture);
-            if (Font.flipTextures) {
-                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-            }
-            gl.texImage2D(gl.TEXTURE_2D, 9, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
         } else {
             texture = this.gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, texture);
-            if (Font.flipTextures) {
-                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-            }
-            gl.texImage2D(gl.TEXTURE_2D, 9, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-            gl.generateMipmap(gl.TEXTURE_2D);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            //gl.generateMipmap(gl.TEXTURE_2D);
             gl.bindTexture(gl.TEXTURE_2D, null);
             this.texture = texture;
         }
@@ -118,7 +121,7 @@
         canvas.width = this.sheetWidth * this.scale;
         canvas.height = this.sheetHeight * this.scale;
         ctx = canvas.getContext('2d');
-        ctx.font = this.fontSize * this.scale + "px " + this.family;
+        ctx.font = this.size * this.scale + "px " + this.family;
         ctx.fillStyle = "rgb(0, 0, 0)";
         ctx.textBaseline = "top";
         this.spaceWidth = ctx.measureText(' ').width;
@@ -148,7 +151,7 @@
         }
         this.canvas.width = this.sheetWidth * this.scale;
         this.canvas.height = this.sheetHeight * this.scale;
-        this.ctx.font = this.fontSize * this.scale + "px " + this.family;
+        this.ctx.font = this.size * this.scale + "px " + this.family;
         this.ctx.fillStyle = "rgb(0, 0, 0)";
         this.ctx.textBaseline = "top";
         this.resetSheet(chars);
@@ -166,9 +169,7 @@
         }
         var ctx = this.ctx,
             w = this.ctx.measureText(character).width,
-            vw = w / this.canvas.width,
-            h = this.fontSize * this.scale * this.lineSize,
-            vh = h / this.canvas.width,
+            h = this.size * this.scale * this.lineSize,
             x = this.nextSheetX,
             y = this.nextSheetY;
         if (x + w > this.canvas.width) {
@@ -179,12 +180,16 @@
                 return this.addCharacter(character);
             }
         }
-        this.characterMap[character] = [
-            x, y,
-            x, vh,
-            vw, y,
-            vw, vh
-        ];
+        this.characterMap[character] = {
+            width: w / this.scale,
+            height: h / this.scale,
+            textureCoords: {
+                x: x / this.canvas.width,
+                y: 1 - (y + h) / this.canvas.height,
+                width: w / this.canvas.width,
+                height: h / this.canvas.height
+            }
+        };
         ctx.fillText(character, x, y);
         x += w + characterSpacing;
         this.nextSheetY = y;
@@ -230,13 +235,29 @@
         this.nextSheetX = 0;
         this.nextSheetY = 0;
         delete this.characterMap;
-        this.characterMap = {};
+        this.characterMap = {
+            ' ': {
+                width: this.spaceWidth,
+                height: this.size * this.lineSize,
+                textureCoords: null
+            }
+        };
         this.addChars(Font.defaultCharacters);
         if (characters) {
             this.addChars(characters);
         }
         this.updateTexture();
         this.dispatch('reset');
+    };
+
+    /**
+     * Gets the character object for a character
+     * @param  {char} character  Gets a character from the sheet
+     * @return {Object}          An object with width, height and textureCoords
+     */
+    proto.getCharacter = function (character) {
+        this.addCharacter(character);
+        return this.characterMap[character];
     };
 
     /**
