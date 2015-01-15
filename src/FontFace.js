@@ -2,9 +2,9 @@
 (function () {
     'use strict';
 
-    if (window.FontFace) {
+    /*if (window.FontFace) {
         return;
-    }
+    }*/
     var proto,
         cssTemplate = '@font-face { font-family: "{family}"; src: {url}; }',
         testFont = 'monospace',
@@ -43,7 +43,6 @@
         testWidth = test.offsetWidth;
         test.style.fontFamily = family + ',' + testFont;
         actualWidth = test.offsetWidth;
-        console.log(family, actualWidth, testWidth);
         return testWidth !== actualWidth;
     }
 
@@ -111,7 +110,6 @@
         }
         fontRule = cssTemplate.replace('{family}', family);
         fontRule = fontRule.replace('{url}', src);
-        console.log(fontRule);
         styleSheet.insertRule(fontRule, 0);
         watchFont(this);
         this.status = "loading";

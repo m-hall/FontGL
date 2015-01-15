@@ -12,23 +12,22 @@
         this.innerHTML += " - " + reason;
         this.style.background = "#fbb";
     }
-    function addLoadTest(name, url) {
-        var el = document.createElement('div');
+    function addLoadTest(name, src) {
+        var el = document.createElement('div'),
+            f = new FontFace(name, src, {});
 
         el.style.fontSize = '30px';
         el.style.fontFamily = '"' + name + '", monospace';
         el.innerHTML = name;
         document.body.appendChild(el);
 
-        new FontFace(name, url)
-            .load()
-            .then(success.bind(el), fail.bind(el));
+        f.load().then(success.bind(el), fail.bind(el));
     }
     function load() {
         addLoadTest('woff', 'url("' + woff + '") format("woff")');
         addLoadTest('woff2', 'url("' + woff2 + '") format("woff2")');
         addLoadTest('nourl');
-        addLoadTest('timeout', 'doesn\'t exist');
+        addLoadTest('timeout', 'url(doesntexist) format(woff)');
         addLoadTest('dontBreak', 'special characters don\'t break `~!@#$%^&*()_+-={}|[]\\;\";,./<>?1234567890');
     }
 
