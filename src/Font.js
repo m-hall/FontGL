@@ -58,16 +58,18 @@
     proto.url = '';
     proto.format = '';
     proto.load = function (url, format) {
-        var src = url || this.url,
+        var srcURL = url || this.url,
             type = format || this.format,
             self = this,
             family = this.name,
+            src = 'url("' + srcURL.replace(/\"/g, '\\"') + '") format("' + type + '")',
             match,
-            fontRule;
+            fontRule,
+            fontFace;
         if (isFontLoaded(family)) {
             return Promise.resolve('Yay!');
         }
-        if (!src) {
+        if (!srcURL) {
             return Promise.reject('No source URL');
         }
         if (!type) {
@@ -77,26 +79,31 @@
             }
         }
         this.format = type;
-        fontRule = cssTemplate.replace('{family}', family);
-        fontRule = fontRule.replace('{url}', 'url(' + src + ') format("' + type + '")');
-        styleSheet.insertRule(fontRule, 0);
-        return new Promise(function (resolve, reject) {
-            if (isFontLoaded(family)) {
-                resolve();
-            }
-            var timer, times = 0;
-            timer = setInterval(function () {
-                times++;
+        if (window.FontFace) {
+            fontFace = new FontFace(family, src, {});
+            return fontFace.load();
+        } else {
+            fontRule = cssTemplate.replace('{family}', family);
+            fontRule = fontRule.replace('{url}', src);
+            styleSheet.insertRule(fontRule, 0);
+            return new Promise(function (resolve, reject) {
                 if (isFontLoaded(family)) {
-                    clearInterval(timer);
-                    self.loaded = true;
                     resolve();
-                } else if (times > maxAttempts) {
-                    clearInterval(timer);
-                    reject("Timed out.");
                 }
-            }, interval);
-        });
+                var timer, times = 0;
+                timer = setInterval(function () {
+                    times++;
+                    if (isFontLoaded(family)) {
+                        clearInterval(timer);
+                        self.loaded = true;
+                        resolve();
+                    } else if (times > maxAttempts) {
+                        clearInterval(timer);
+                        reject("Timed out.");
+                    }
+                }, interval);
+            });
+        }
     };
     proto.unload = function () {
 

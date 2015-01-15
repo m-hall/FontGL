@@ -29,7 +29,8 @@
         addLoadTest('woff2', woff2, 'woff2');
         addLoadTest('arial');
         addLoadTest('nourl');
-        addLoadTest('timeout', 'doesn\'t exits');
+        addLoadTest('timeout', 'doesn\'t exist');
+        addLoadTest('dontBreak', 'special characters don\'t break `~!@#$%^&*()_+-={}|[]\\;\";,./<>?1234567890');
     }
 
     window.addEventListener('load', load, false);
