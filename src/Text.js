@@ -163,7 +163,6 @@
             }
             x += char.width;
         }
-        console.log(verticesArray, texturesArray);
         this.triangles = triangles;
 
         buffer = gl.createBuffer();
