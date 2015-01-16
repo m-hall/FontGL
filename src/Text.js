@@ -3,7 +3,7 @@
 (function () {
     "use strict";
     var proto,
-        glShaders = new Map(),
+        shader,
         vertexShader =
             "attribute vec3 vertex;\n" +
             "attribute vec2 textureCoord;\n" +
@@ -26,10 +26,11 @@
             "    gl_FragColor = vec4(0.0, 0.0, 0.0, o.a * alpha);\n" +
             "}";
 
-    function initializeShader(gl) {
+    function initializeProgram(gl) {
         var vert = gl.createShader(gl.VERTEX_SHADER),
             frag = gl.createShader(gl.FRAGMENT_SHADER),
-            shader = {
+            prog = {
+                gl: gl,
                 program: null,
                 property: {}
             };
@@ -39,35 +40,33 @@
         gl.compileShader(vert);
         gl.compileShader(frag);
 
-        shader.program = gl.createProgram();
-        gl.attachShader(shader.program, vert);
-        gl.attachShader(shader.program, frag);
-        gl.linkProgram(shader.program);
-        gl.useProgram(shader.program);
+        prog.program = gl.createProgram();
+        gl.attachShader(prog.program, vert);
+        gl.attachShader(prog.program, frag);
+        gl.linkProgram(prog.program);
+        gl.useProgram(prog.program);
 
         // attributes
-        shader.property.vertex = gl.getAttribLocation(shader.program, 'vertex');
-        gl.enableVertexAttribArray(shader.property.vertex);
+        prog.property.vertex = gl.getAttribLocation(prog.program, 'vertex');
+        gl.enableVertexAttribArray(prog.property.vertex);
 
-        shader.property.textureCoord = gl.getAttribLocation(shader.program, 'textureCoord');
-        gl.enableVertexAttribArray(shader.property.textureCoord);
+        prog.property.textureCoord = gl.getAttribLocation(prog.program, 'textureCoord');
+        gl.enableVertexAttribArray(prog.property.textureCoord);
 
         // uniforms
-        shader.property.tex = gl.getUniformLocation(shader.program, 'tex');
-        shader.property.alpha = gl.getUniformLocation(shader.program, 'alpha');
+        prog.property.tex = gl.getUniformLocation(prog.program, 'tex');
+        prog.property.alpha = gl.getUniformLocation(prog.program, 'alpha');
 
         // matrices
-        shader.property.modelView = gl.getUniformLocation(shader.program, 'modelView');
-        shader.property.perspective = gl.getUniformLocation(shader.program, 'perspective');
-        return shader;
+        prog.property.modelView = gl.getUniformLocation(prog.program, 'modelView');
+        prog.property.perspective = gl.getUniformLocation(prog.program, 'perspective');
+        return prog;
     }
     function getShader(gl) {
-        var shader = glShaders.get(gl);
-        if (shader) {
+        if (shader && shader.gl === gl) {
             return shader;
         }
-        shader = initializeShader(gl);
-        glShaders.set(gl, shader);
+        shader = initializeProgram(gl);
         return shader;
     }
 
