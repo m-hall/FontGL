@@ -14,7 +14,7 @@
     function init() {
         canvas = document.createElement('canvas');
         document.body.appendChild(canvas);
-        gl = canvas.getContext('webgl');
+        gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
         canvas.style.width = "500px";
