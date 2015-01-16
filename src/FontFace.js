@@ -10,7 +10,7 @@
         testSize = '250px',
         testString = 'Quid pro quo',
         interval = 100,
-        maxAttempts = 20,
+        maxAttempts = 100,
         test,
         styleSheet = (function () {
             var style = document.createElement('style');
