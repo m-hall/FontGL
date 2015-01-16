@@ -13,7 +13,6 @@
      */
     function Font(family, options) {
         this.family = family;
-        this.sheets = {};
         if (options) {
             if (options.gl) {
                 this.gl = options.gl;
