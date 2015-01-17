@@ -12,7 +12,7 @@
      * @param {Object} [options] Optional properties for the Font object.
      */
     function Font(family, options) {
-        this.family = family;
+        var self = this;
         if (options) {
             if (options.gl) {
                 this.gl = options.gl;
@@ -26,22 +26,35 @@
             if (!isNaN(options.lineSize) && options.lineSize > 0) {
                 this.lineSize = options.lineSize;
             }
+            if (options.characters) {
+                this.characters = "" + options.characters;
+            }
         }
+
+        this._promise = new Promise(function (resolve, reject) {
+            self._resolve = resolve;
+            self._reject = reject;
+        });
 
         this.characterMap = {};
-        this.events = {};
 
-        this.createSheet();
-        this.addChars(Font.defaultCharacters);
-        if (this.gl) {
-            this.updateTexture();
+        if (family instanceof FontFace) {
+            this.family = family.family;
+            this.fontFace = family;
+            family.load().then(
+                function () {
+                    self.fontLoaded();
+                },
+                function () {
+                    self._reject();
+                }
+            );
+        } else if (typeof family === 'string' && FontFace.isLoaded(family)) {
+            this.family = family;
+            this.fontLoaded();
+        } else {
+            this._reject();
         }
-
-        this.characterMap[' '] = {
-            width: this.spaceWidth,
-            height: this.size * this.lineSize,
-            textureCoords: null
-        };
     }
     Font.defaultCharacters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.,\'-\/';
     proto = Font.prototype;
@@ -54,6 +67,33 @@
     proto.sheetHeight = 256;
     proto.nextSheetX = 0;
     proto.nextSheetY = 0;
+    proto.characters = Font.defaultCharacters;
+
+    /**
+     * Gets the promise that fulfills when the FontFace finishes loading
+     * @this {FontFace}
+     * @property {Promise} loaded  A promise object for loading the font
+     */
+    Object.defineProperty(
+        proto,
+        'ready',
+        {
+            get: function () {
+                return this._promise;
+            }
+        }
+    );
+
+    /**
+     * Handles the Font Face when it has loaded
+     */
+    proto.fontLoaded = function () {
+        this.createSheet();
+        this.addChars(this.characters);
+        if (this.gl) {
+            this.updateTexture();
+        }
+    };
 
     /**
      * Updates the font's GL texture
@@ -61,8 +101,7 @@
      */
     proto.updateTexture = function () {
         var gl = this.gl,
-            texture = this.texture,
-            event;
+            texture = this.texture;
         if (!gl) {
             return false;
         }
@@ -76,14 +115,12 @@
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-            //gl.generateMipmap(gl.TEXTURE_2D);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+            gl.generateMipmap(gl.TEXTURE_2D);
             gl.bindTexture(gl.TEXTURE_2D, null);
             this.texture = texture;
+            this._resolve();
         }
-        this.dispatch('update');
     };
     /**
      * Deletes the font's GL texture
@@ -94,7 +131,6 @@
             this.gl.deleteTexture(this.texture);
             delete this.texture;
         }
-        this.dispatch('delete');
     };
     /**
      * Sets the GL context
@@ -105,7 +141,6 @@
         this.deleteTexture();
         this.gl = gl;
         this.updateTexture();
-        this.dispatch('resize');
     };
     /**
      * Creates the canvas sheet
@@ -126,6 +161,11 @@
         this.spaceWidth = ctx.measureText(' ').width;
         this.canvas = canvas;
         this.ctx = ctx;
+        this.characterMap[' '] = {
+            width: this.spaceWidth,
+            height: this.size * this.lineSize,
+            textureCoords: null
+        };
     };
     /**
      * Deletes the canvas sheet
@@ -143,18 +183,13 @@
      */
     proto.biggerSheet = function () {
         var chars = Object.keys(this.characterMap).join('');
-        if (this.sheetWidth === this.sheetHeight) {
-            this.sheetWidth *= 2;
-        } else {
-            this.sheetHeight *= 2;
-        }
+        this.sheetHeight *= 2;
         this.canvas.width = this.sheetWidth * this.scale;
         this.canvas.height = this.sheetHeight * this.scale;
         this.ctx.font = this.size * this.scale + "px " + this.family;
         this.ctx.fillStyle = "rgb(0, 0, 0)";
         this.ctx.textBaseline = "top";
         this.resetSheet(chars);
-        this.dispatch('resize');
     };
     /**
      * Adds a single character to the font sheet
@@ -167,8 +202,9 @@
             return false;
         }
         var ctx = this.ctx,
+            scale = this.scale,
             w = this.ctx.measureText(character).width,
-            h = this.size * this.scale * this.lineSize,
+            h = this.size * scale * this.lineSize,
             x = this.nextSheetX,
             y = this.nextSheetY;
         if (x + w > this.canvas.width) {
@@ -180,8 +216,8 @@
             }
         }
         this.characterMap[character] = {
-            width: w / this.scale,
-            height: h / this.scale,
+            width: w / scale,
+            height: h / scale,
             textureCoords: {
                 x: x / this.canvas.width,
                 y: 1 - (y + h) / this.canvas.height,
@@ -189,6 +225,7 @@
                 height: h / this.canvas.height
             }
         };
+        this.characters += character;
         ctx.fillText(character, x, y);
         x += w + characterSpacing;
         this.nextSheetY = y;
@@ -219,13 +256,12 @@
         if (this.addChars(characters) && this.gl) {
             this.updateTexture();
         }
-    }
+    };
     /**
      * Resets the character sheet, optionally with extra characters
      * @this   {Font}
-     * @param  {string} characters  A list of characters
      */
-    proto.resetSheet = function (characters) {
+    proto.resetSheet = function () {
         if (this.canvas) {
             this.ctx.clearRect(0, 0, this.sheetWidth, this.sheetHeight);
         } else {
@@ -241,12 +277,8 @@
                 textureCoords: null
             }
         };
-        this.addChars(Font.defaultCharacters);
-        if (characters) {
-            this.addChars(characters);
-        }
+        this.addChars(this.characters);
         this.updateTexture();
-        this.dispatch('reset');
     };
 
     /**
@@ -266,7 +298,6 @@
     proto.destroy = function () {
         this.deleteTexture();
         this.deleteSheet();
-        this.dispatch('destroy');
     };
     /**
      * Checks if the Font is ready to be rendered to GL
@@ -277,55 +308,23 @@
         return this.sheet && this.texture;
     };
     /**
-     * Fires events to the listeners
-     * @this   {Font}
-     * @param  {string} name         Event name
-     * @param  {object} [properties] An object with arbitrary properties.
+     * Measures the width of a text string
+     * @param  {string} text  A string
+     * @return {int}          The width of the string
      */
-    proto.dispatch = function (name, properties) {
-        var events = this.events[name],
-            props = properties || {},
+    proto.textWidth = function (text) {
+        if (Font.canvas && Font.ctx) {
+            return false;
+        }
+        var chars = text.split(''),
+            w = 0,
             i,
             l;
-        if (!events) {
-            return;
+        for (i = 0, l = chars.length; i < l; i += 1) {
+            w += this.getCharacter(chars[i]).width;
         }
-        props.name = name;
-        for (i = 0, l = events.length; i < l; i += 1) {
-            events[i].call(this, props);
-        }
+        return w;
     };
-    /**
-     * Adds a listener for an event on the Font object
-     * @this   {Font}
-     * @param  {string}   name     Event name
-     * @param  {Callable} handler  An event listener
-     */
-    proto.listen = function (name, handler) {
-        if (!this.events[name]) {
-            this.events[name] = [];
-        }
-        this.events[name].push(handler);
-    };
-    /**
-     * Removes a listener for an event on the Font object
-     * @this   {Font}
-     * @param  {string}   name     Event name
-     * @param  {Callable} handler  An event listener
-     */
-    proto.unlisten = function (name, handler) {
-        if (!this.events[name]) {
-            return;
-        }
-        var i = this.events[name].indexOf(handler);
-        if (i) {
-            this.events[name].splice(i, 1);
-        }
-    };
-    /**
-     * Alias for unlisten
-     */
-    proto.ignore = proto.unlisten;
 
     window.Font = Font;
 }());
