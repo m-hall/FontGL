@@ -2,13 +2,16 @@
 Renders fonts into WebGL context.
 
 ## Features
-* Font loading
-* Text rendering
+* Font Face loading
+* GL Text rendering
 
 
 ## Usage
 
 ### FontFace
+Loads a WebFont for use with an application.
+
+#### Example
 ```JavaScript
 var face = new FontFace('family', 'url("http://src.url/font.woff") format("woff")');
 face.load()
@@ -16,16 +19,21 @@ face.load()
 ```
 
 ### Font
+Creates a texture for rendering font to GL.
+
+#### Example
 ```JavaScript
 var font = new Font('family');
 font.setGL(glContext);
 ```
 
 ### Text
+Renders a string to GL.
+
 ```JavaScript
 var text = new Text('message', font, gl);
 text.render(perspectiveMatrix, modelViewMatrix);
 ```
 
 ## Resources
-* [toji/gl-matrix](https://github.com/toji/gl-matrix) - Used for the samples.
+* [toji/gl-matrix](https://github.com/toji/gl-matrix) - Required for text rendering.
