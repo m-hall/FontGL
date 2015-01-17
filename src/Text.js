@@ -1,5 +1,5 @@
 /*jslint browser: true */
-
+/*global Font, Float32Array */
 (function () {
     "use strict";
     var proto,
@@ -26,6 +26,11 @@
             "    gl_FragColor = vec4(0.0, 0.0, 0.0, o.a * alpha);\n" +
             "}";
 
+    /**
+     * Initializes the shader program for a GL Context
+     * @param  {WebGLContext} gl  An active WebGL context
+     * @return {Object}           An object containing the shader and it's properties
+     */
     function initializeProgram(gl) {
         var vert = gl.createShader(gl.VERTEX_SHADER),
             frag = gl.createShader(gl.FRAGMENT_SHADER),
@@ -62,6 +67,11 @@
         prog.property.perspective = gl.getUniformLocation(prog.program, 'perspective');
         return prog;
     }
+    /**
+     * Gets the shader for a specific WebGL Context
+     * @param  {WebGLContext} gl  An active WebGL Context
+     * @return {Object}           An object containing the shader and it's properties
+     */
     function getShader(gl) {
         if (shader && shader.gl === gl) {
             return shader;
@@ -70,6 +80,14 @@
         return shader;
     }
 
+    /**
+     * A class for rendering text to a GL Context
+     * @constructor
+     * @param {string}       message  A string to be rendered
+     * @param {Font}         font     A Font object
+     * @param {WebGLContext} gl       An active WebGL Context
+     * @param {Object}       options  Options for the text object
+     */
     function Text(message, font, gl, options) {
         font.addCharacters(message);
         this.message = message;
@@ -78,9 +96,6 @@
         if (options) {
             if (!isNaN(options.scale) && options.scale > 0) {
                 this.scale = options.scale;
-            }
-            if (!isNaN(options.size) && options.size > 0) {
-                this.size = options.size;
             }
             if (!isNaN(options.size) && options.size > 0) {
                 this.size = options.size;
@@ -114,6 +129,11 @@
             }
         }
     );
+
+    /**
+     * Creates the internal buffer for rendering the text
+     * @this {Text}
+     */
     proto.createBuffer = function () {
         var font = this.font,
             triangles = 0,
@@ -175,9 +195,10 @@
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texturesArray), gl.STATIC_DRAW);
         this.textureCoords = buffer;
     };
-    proto.updateBuffer = function () {
-        throw "Not implemented";
-    };
+    /**
+     * Destroys the buffers and properties of the Text object
+     * @this {Text}
+     */
     proto.destroy = function () {
         var gl = this.gl;
         if (gl.isBuffer(this.vertices)) {
@@ -192,30 +213,33 @@
         this.font = null;
         this.gl = null;
     };
-    proto.update = function (message, font, options) {
-        font.addCharacters(message);
-    };
+    /**
+     * Renders the text object to it's GL context
+     * @this   {Text}
+     * @param  {mat4} perspective  A 4x4 matrix defining the perspective
+     * @param  {mat4} modelView    A 4x4 matrix defining the model's orientation in the viewport
+     */
     proto.render = function (perspective, modelView) {
         var gl = this.gl,
-            shader = getShader(gl),
+            prog = getShader(gl),
             texture = this.font.texture;
-        if (!texture || !shader) {
+        if (!texture || !prog) {
             return;
         }
-        gl.useProgram(shader.program);
-        gl.uniform1f(shader.property.alpha, 1);
-        gl.uniformMatrix4fv(shader.property.perspective, false, perspective);
-        gl.uniformMatrix4fv(shader.property.modelView, false, modelView);
+        gl.useProgram(prog.program);
+        gl.uniform1f(prog.property.alpha, 1);
+        gl.uniformMatrix4fv(prog.property.perspective, false, perspective);
+        gl.uniformMatrix4fv(prog.property.modelView, false, modelView);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.uniform1i(shader.tex, 0);
+        gl.uniform1i(prog.tex, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertices);
-        gl.vertexAttribPointer(shader.property.vertex, 3, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(prog.property.vertex, 3, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoords);
-        gl.vertexAttribPointer(shader.property.textureCoord, 2, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(prog.property.textureCoord, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLES, 0, this.triangles);
     };
 
