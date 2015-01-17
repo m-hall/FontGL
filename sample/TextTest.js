@@ -30,7 +30,7 @@
     }
 
     function renderFrame() {
-        var delta = Date.now() - initial, i, l;
+        var delta = Date.now() - initial;
         mat4.identity(modelView);
         mat4.translate(modelView, modelView, [100, 100, 0]);
         texts[0].render(perspective, modelView);
@@ -46,16 +46,16 @@
     }
 
     function load() {
+        var openSans = new FontFace('open sans', 'url("http://fonts.gstatic.com/s/opensans/v10/DXI1ORHCpsQm3Vp6mXoaTaRDOzjiPcYnFooOUGCOsRk.woff") format("woff")', {});
         init();
         fonts['monospace'] = new Font('monospace', { gl: gl });
         texts.push(new Text('monospace', fonts['monospace'], gl));
-        new FontFace('open sans', 'url("http://fonts.gstatic.com/s/opensans/v10/DXI1ORHCpsQm3Vp6mXoaTaRDOzjiPcYnFooOUGCOsRk.woff") format("woff")', {})
-            .load()
-            .then(function () {
-                fonts['open sans'] = new Font('open sans', { gl: gl });
 
-                texts.push(new Text('open sans', fonts['open sans'], gl));
-            });
+        fonts['open sans'] = new Font(openSans, { gl: gl });
+        openSans.load();
+        fonts['open sans'].ready.then(function () {
+            texts.push(new Text('open sans', fonts['open sans'], gl));
+        });
         window.requestAnimationFrame(renderFrame);
     }
 

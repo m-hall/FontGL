@@ -88,28 +88,16 @@
      * @param {WebGLContext} gl       An active WebGL Context
      * @param {Object}       options  Options for the text object
      */
-    function Text(message, font, gl, options) {
+    function Text(message, font, gl) {
         font.addCharacters(message);
         this.message = message;
         this.font = font;
         this.gl = gl;
-        if (options) {
-            if (!isNaN(options.scale) && options.scale > 0) {
-                this.scale = options.scale;
-            }
-            if (!isNaN(options.size) && options.size > 0) {
-                this.size = options.size;
-            }
-        }
         this.createBuffer();
     }
     proto = Text.prototype;
     proto.message = '';
     proto.lines = 1;
-    proto.scale = 1;
-    proto.size = 16;
-    proto.italic = false;
-    proto.bold = false;
     proto.triangles = 0;
     proto.vertices = null;
     proto.textureCoords = null;
@@ -124,7 +112,7 @@
             },
             'height': {
                 get: function () {
-                    return this.size * this.font.lineSize * this.lines;
+                    return this.font.size * this.font.lineSize * this.lines;
                 }
             }
         }
