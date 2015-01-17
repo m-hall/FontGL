@@ -92,6 +92,7 @@
         });
         this.options = options;
     }
+    FontFace.isLoaded = isFontLoaded;
     proto = FontFace.prototype;
     proto.featureSettings = "normal";
     proto.status = "unloaded";
@@ -123,7 +124,7 @@
      */
     proto.load = function () {
         if (this.status !== "unloaded") {
-            return this._promise();
+            return this._promise;
         }
         var family = this.family,
             src = this.src,
