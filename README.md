@@ -23,8 +23,8 @@ Creates a texture for rendering font to GL.
 
 #### Example
 ```JavaScript
-var font = new Font('family');
-font.setGL(glContext);
+var font = new Font('family', {gl : glContext});
+font.ready.then(success, error);
 ```
 
 ### Text
