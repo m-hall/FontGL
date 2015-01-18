@@ -1,5 +1,5 @@
 /*jslint browser: true */
-/*global Font, Float32Array */
+/*global Font, Float32Array, mat4 */
 (function () {
     "use strict";
     var proto,
@@ -93,6 +93,7 @@
         this.message = message;
         this.font = font;
         this.gl = gl;
+        this.modelView = mat4.create();
         this.createBuffer();
     }
     proto = Text.prototype;
@@ -207,7 +208,7 @@
      * @param  {mat4} perspective  A 4x4 matrix defining the perspective
      * @param  {mat4} modelView    A 4x4 matrix defining the model's orientation in the viewport
      */
-    proto.render = function (perspective, modelView) {
+    proto.render = function (perspective) {
         var gl = this.gl,
             prog = getShader(gl),
             texture = this.font.texture;
@@ -217,7 +218,7 @@
         gl.useProgram(prog.program);
         gl.uniform1f(prog.property.alpha, 1);
         gl.uniformMatrix4fv(prog.property.perspective, false, perspective);
-        gl.uniformMatrix4fv(prog.property.modelView, false, modelView);
+        gl.uniformMatrix4fv(prog.property.modelView, false, this.modelView);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -229,6 +230,25 @@
         gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoords);
         gl.vertexAttribPointer(prog.property.textureCoord, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLES, 0, this.triangles);
+    };
+    proto.rotate = function (x, y, z) {
+        x = x || 0;
+        y = y || 0;
+        z = z || 0;
+        var delta = Math.max(
+            Math.abs(x),
+            Math.abs(y),
+            Math.abs(z)
+        );
+        mat4.translate(this.modelView, this.modelView, [this.width / 2, this.font.size / 2, 0]);
+        mat4.rotate(this.modelView, this.modelView, delta, [x, y, z]);
+        mat4.translate(this.modelView, this.modelView, [-this.width / 2, -this.font.size / 2, 0]);
+    };
+    proto.translate = function (x, y, z) {
+        x = x || 0;
+        y = y || 0;
+        z = z || 0;
+        mat4.translate(this.modelView, this.modelView, [x, y, z]);
     };
 
     window.Text = Text;
