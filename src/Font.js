@@ -216,8 +216,8 @@
             }
         }
         this.characterMap[character] = {
-            width: w / scale,
-            height: h / scale,
+            width: w / scale - characterSpacing,
+            height: h / scale - characterSpacing,
             textureCoords: {
                 x: x / this.canvas.width,
                 y: 1 - (y + h) / this.canvas.height,
