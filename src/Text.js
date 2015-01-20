@@ -117,7 +117,7 @@
     proto.triangles = 0;
     proto.vertices = null;
     proto.textureCoords = null;
-    proto.anchor = Anchor.bottomLeft;
+    proto.anchor = Anchor.midCenter;
 
     Object.defineProperties(
         proto,
@@ -144,15 +144,15 @@
             case Anchor.bottomLeft:
             case Anchor.middleLeft:
             case Anchor.topLeft:
-                return -this.width / 2;
+                return 0;
             case Anchor.bottomCenter:
             case Anchor.middleCenter:
             case Anchor.topCenter:
-                return 0;
+                return -this.width / 2;
             case Anchor.bottomRight:
             case Anchor.middleRight:
             case Anchor.topRight:
-                return this.width / 2;
+                return -this.width;
         }
     };
     /**
@@ -164,15 +164,15 @@
             case Anchor.bottomLeft:
             case Anchor.bottomCenter:
             case Anchor.bottomRight:
-                return -this.height / 2;
+                return 0;
             case Anchor.middleLeft:
             case Anchor.middleCenter:
             case Anchor.middleRight:
-                return 0;
+                return -this.height / 2;
             case Anchor.topRight:
             case Anchor.topLeft:
             case Anchor.topCenter:
-                return this.height / 2;
+                return -this.height;
         }
     };
     /**
