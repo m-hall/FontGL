@@ -231,6 +231,12 @@
         gl.vertexAttribPointer(prog.property.textureCoord, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLES, 0, this.triangles);
     };
+    /**
+     * Rotates the Text in GL space
+     * @param  {float} x Rotation around the x plane
+     * @param  {float} y Rotation around the y plane
+     * @param  {float} z Rotation around the z plane
+     */
     proto.rotate = function (x, y, z) {
         x = x || 0;
         y = y || 0;
@@ -244,6 +250,12 @@
         mat4.rotate(this.modelView, this.modelView, delta, [x, y, z]);
         mat4.translate(this.modelView, this.modelView, [-this.width / 2, -this.font.size / 2, 0]);
     };
+    /**
+     * Translates the Text object in GL space
+     * @param  {float} x Translation along the x plane
+     * @param  {float} y Translation along the y plane
+     * @param  {float} z Translation along the z plane
+     */
     proto.translate = function (x, y, z) {
         x = x || 0;
         y = y || 0;
