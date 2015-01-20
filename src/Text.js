@@ -24,7 +24,21 @@
             "void main(void) {\n" +
             "    vec4 o = texture2D(tex, texCoord);\n" +
             "    gl_FragColor = vec4(0.0, 0.0, 0.0, o.a * alpha);\n" +
-            "}";
+            "}",
+        Anchor = {
+            bottomLeft: 0,
+            middleLeft: 1,
+            midLeft: 1,
+            topLeft: 2,
+            bottomCenter: 3,
+            middleCenter: 4,
+            midCenter: 4,
+            topCenter: 5,
+            bottomRight: 6,
+            middleRight: 7,
+            midRight: 7,
+            topRight: 8
+        };
 
     /**
      * Initializes the shader program for a GL Context
@@ -96,12 +110,14 @@
         this.modelView = mat4.create();
         this.createBuffer();
     }
+    Text.Anchor = Anchor;
     proto = Text.prototype;
     proto.message = '';
     proto.lines = 1;
     proto.triangles = 0;
     proto.vertices = null;
     proto.textureCoords = null;
+    proto.anchor = Anchor.bottomLeft;
 
     Object.defineProperties(
         proto,
@@ -119,6 +135,46 @@
         }
     );
 
+    /**
+     * Gets the X translation relative to the anchor
+     * @return {float} A translation along the X axis
+     */
+    proto.getAnchorX = function () {
+        switch (this.anchor) {
+            case Anchor.bottomLeft:
+            case Anchor.middleLeft:
+            case Anchor.topLeft:
+                return -this.width / 2;
+            case Anchor.bottomCenter:
+            case Anchor.middleCenter:
+            case Anchor.topCenter:
+                return 0;
+            case Anchor.bottomRight:
+            case Anchor.middleRight:
+            case Anchor.topRight:
+                return this.width / 2;
+        }
+    };
+    /**
+     * Gets the Y translation relative to the anchor
+     * @return {float} A tranlation along the Y axis
+     */
+    proto.getAnchorY = function () {
+        switch (this.anchor) {
+            case Anchor.bottomLeft:
+            case Anchor.bottomCenter:
+            case Anchor.bottomRight:
+                return -this.height / 2;
+            case Anchor.middleLeft:
+            case Anchor.middleCenter:
+            case Anchor.middleRight:
+                return 0;
+            case Anchor.topRight:
+            case Anchor.topLeft:
+            case Anchor.topCenter:
+                return this.height / 2;
+        }
+    };
     /**
      * Creates the internal buffer for rendering the text
      * @this {Text}
@@ -211,10 +267,14 @@
     proto.render = function (perspective) {
         var gl = this.gl,
             prog = getShader(gl),
-            texture = this.font.texture;
+            texture = this.font.texture,
+            x = this.getAnchorX(),
+            y = this.getAnchorY();
         if (!texture || !prog) {
             return;
         }
+        this.translate(x, y, 0);
+
         gl.useProgram(prog.program);
         gl.uniform1f(prog.property.alpha, 1);
         gl.uniformMatrix4fv(prog.property.perspective, false, perspective);
@@ -230,6 +290,8 @@
         gl.bindBuffer(gl.ARRAY_BUFFER, this.textureCoords);
         gl.vertexAttribPointer(prog.property.textureCoord, 2, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.TRIANGLES, 0, this.triangles);
+
+        this.translate(-x, -y, 0);
     };
     /**
      * Rotates the Text in GL space
@@ -246,9 +308,7 @@
             Math.abs(y),
             Math.abs(z)
         );
-        mat4.translate(this.modelView, this.modelView, [this.width / 2, this.font.size / 2, 0]);
         mat4.rotate(this.modelView, this.modelView, delta, [x, y, z]);
-        mat4.translate(this.modelView, this.modelView, [-this.width / 2, -this.font.size / 2, 0]);
     };
     /**
      * Translates the Text object in GL space
