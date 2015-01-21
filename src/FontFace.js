@@ -1,4 +1,3 @@
-/*jslint browser: true, nomen: true */
 (function () {
     'use strict';
 
@@ -6,7 +5,7 @@
         return;
     }*/
     var proto,
-        cssTemplate = '@font-face { font-family: "{family}"; src: {url}; }',
+        cssTemplate = '@font-face { font-family: \'{family}\'; src: {url}; }',
         testSize = '250px',
         testString = 'Quid pro quo',
         interval = 100,
@@ -65,12 +64,12 @@
             times += 1;
             if (isFontLoaded(this.family)) {
                 clearInterval(timer);
-                this.status = "loaded";
+                this.status = 'loaded';
                 this._resolve();
             } else if (times > maxAttempts) {
                 clearInterval(timer);
-                this.status = "error";
-                this._reject("Timed out.");
+                this.status = 'error';
+                this._reject('Timed out.');
             }
         }.bind(font), interval);
     }
@@ -94,13 +93,13 @@
     }
     FontFace.isLoaded = isFontLoaded;
     proto = FontFace.prototype;
-    proto.featureSettings = "normal";
-    proto.status = "unloaded";
-    proto.stretch = "normal";
-    proto.style = "normal";
-    proto.unicodeRange = "U+0-10FFFF";
-    proto.variant = "normal";
-    proto.weight = "normal";
+    proto.featureSettings = 'normal';
+    proto.status = 'unloaded';
+    proto.stretch = 'normal';
+    proto.style = 'normal';
+    proto.unicodeRange = 'U+0-10FFFF';
+    proto.variant = 'normal';
+    proto.weight = 'normal';
 
     /**
      * Gets the promise that fulfills when the FontFace finishes loading
@@ -123,19 +122,19 @@
      * @return {Promise}  A promise that will be fulfilled when the font finishes loading.
      */
     proto.load = function () {
-        if (this.status !== "unloaded") {
+        if (this.status !== 'unloaded') {
             return this._promise;
         }
         var family = this.family,
             src = this.src,
             fontRule;
         if (isFontLoaded(family)) {
-            this.status = "loaded";
+            this.status = 'loaded';
             this._resolve();
             return this._promise;
         }
         if (!src) {
-            this.status = "error";
+            this.status = 'error';
             this._reject('No source URL');
             return this._promise;
         }
@@ -143,7 +142,7 @@
         fontRule = fontRule.replace('{url}', src);
         styleSheet.insertRule(fontRule, 0);
         watchFont(this);
-        this.status = "loading";
+        this.status = 'loading';
         return this._promise;
     };
 

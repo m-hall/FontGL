@@ -1,4 +1,3 @@
-/*jslint browser: true */
 /*global Font, Text, FontFace, mat4 */
 (function () {
     "use strict";
@@ -49,7 +48,7 @@
             text;
         init();
         fonts['monospace'] = new Font('monospace', { gl: gl });
-        text = new Text('monospace', fonts['monospace'], gl)
+        text = new Text('monospace', fonts['monospace'], gl);
         text.translate(100, 100);
         texts.push(text);
 

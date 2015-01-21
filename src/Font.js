@@ -1,7 +1,6 @@
-/*jslint browser: true */
-
+/*global FontFace */
 (function () {
-    "use strict";
+    'use strict';
     var proto,
         spaces = /\s/gm,
         characterSpacing = 1; // in pixels
@@ -27,7 +26,7 @@
                 this.lineSize = options.lineSize;
             }
             if (options.characters) {
-                this.characters = "" + options.characters;
+                this.characters = '' + options.characters;
             }
         }
 
@@ -155,9 +154,9 @@
         canvas.width = this.sheetWidth * this.scale;
         canvas.height = this.sheetHeight * this.scale;
         ctx = canvas.getContext('2d');
-        ctx.font = this.size * this.scale + "px " + this.family;
-        ctx.fillStyle = "rgb(0, 0, 0)";
-        ctx.textBaseline = "top";
+        ctx.font = this.size * this.scale + 'px ' + this.family;
+        ctx.fillStyle = 'rgb(0, 0, 0)';
+        ctx.textBaseline = 'top';
         this.spaceWidth = ctx.measureText(' ').width;
         this.canvas = canvas;
         this.ctx = ctx;
@@ -186,9 +185,9 @@
         this.sheetHeight *= 2;
         this.canvas.width = this.sheetWidth * this.scale;
         this.canvas.height = this.sheetHeight * this.scale;
-        this.ctx.font = this.size * this.scale + "px " + this.family;
-        this.ctx.fillStyle = "rgb(0, 0, 0)";
-        this.ctx.textBaseline = "top";
+        this.ctx.font = this.size * this.scale + 'px ' + this.family;
+        this.ctx.fillStyle = 'rgb(0, 0, 0)';
+        this.ctx.textBaseline = 'top';
         this.resetSheet(chars);
     };
     /**

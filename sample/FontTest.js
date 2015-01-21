@@ -1,4 +1,3 @@
-/*jslint browser: true */
 /*global Font, FontFace */
 (function () {
     "use strict";

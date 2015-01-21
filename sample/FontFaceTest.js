@@ -1,5 +1,5 @@
 /*jslint browser: true */
-/*global Font */
+/*global FontFace */
 (function () {
     "use strict";
     var woff = 'http://fonts.gstatic.com/s/opensans/v10/DXI1ORHCpsQm3Vp6mXoaTaRDOzjiPcYnFooOUGCOsRk.woff',

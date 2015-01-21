@@ -1,5 +1,4 @@
-/*jslint browser: true */
-/*global Font, Float32Array, mat4 */
+/*global Float32Array, mat4 */
 (function () {
     "use strict";
     var proto,
