@@ -4,6 +4,7 @@ Renders fonts into WebGL context.
 ## Features
 * Font Face loading
 * GL Text rendering
+* Font atlas
 
 
 ## Usage
