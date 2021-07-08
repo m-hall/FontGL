@@ -5,6 +5,10 @@
         spaces = /\s/gm,
         characterSpacing = 1; // in pixels
 
+    function nextPower(value, power) {
+        return Math.pow(power, Math.ceil(Math.log(value) / Math.log(power)));
+    }
+
     /**
      * Font class for GL text rendering
      * @param {string} family    Font family name
@@ -17,7 +21,7 @@
                 this.gl = options.gl;
             }
             if (!isNaN(options.scale) && options.scale > 0) {
-                this.scale = options.scale;
+                this.scale = nextPower(options.scale, 2);
             }
             if (!isNaN(options.size) && options.size > 0) {
                 this.size = options.size;
@@ -59,7 +63,7 @@
     proto = Font.prototype;
 
     proto.size = 30;
-    proto.scale = 1;
+    proto.scale = window.devicePixelRatio ? nextPower(window.devicePixelRatio, 2) : 1;
     proto.lineSize = 1.3; // size relative to EMs
 
     proto.sheetWidth = 256;

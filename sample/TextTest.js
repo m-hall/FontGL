@@ -23,8 +23,6 @@
         perspective = mat4.create();
         mat4.ortho(perspective, 0, 500, 0, 500, 0, 1);
         window.gl = gl;
-        Font.prototype.scale = window.devicePixelRatio || 1;
-        Text.prototype.scale = window.devicePixelRatio || 1;
     }
 
     function renderFrame() {
